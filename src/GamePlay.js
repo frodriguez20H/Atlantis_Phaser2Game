@@ -24,10 +24,22 @@ GamePlayManager = {
         
         game.load.spritesheet('horse', 'assets/images/horse.png', 84, 156, 2)
         game.load.spritesheet('diamonds', 'assets/images/diamonds.png', 81, 84, 4)
+
+        game.load.audio('sfxPop', 'assets/sounds/sfxPop.mp3');
+        game.load.audio('musicLoop', 'assets/sounds/musicLoop.mp3');
+        game.load.audio('win', 'assets/sounds/Win.mp3');
+        game.load.audio('lost', 'assets/sounds/Lost.mp3');
         
     },
     create: function() {
         game.add.sprite(0, 0, 'background');
+
+        this.win = game.add.audio('win');
+        this.lost = game.add.audio('lost');
+        this.sfxPop = game.add.audio('sfxPop');
+        this.sfxPop.allowMultiple = true;
+        this.musicLoop = game.add.audio('musicLoop', 1, true);
+        this.musicLoop.play();
 
         this.boobleArray = [];
         for(var i=0; i<AMOUNT_BOOBLES; i++){
@@ -112,6 +124,7 @@ GamePlayManager = {
                 if (this.totalTime<=0){
                     game.time.events.remove(this.timerGameOver);
                     this.endGame = true;
+                    this.lost.play();
                     this.showFinalMessage('GAME OVER!');
                 }
             }       
@@ -126,12 +139,14 @@ GamePlayManager = {
         this.horse.frame = 1;
 
         this.currentScore +=100;
+        this.sfxPop.play();
         this.scoreText.text = this.currentScore;
 
         this.amountDiamondsCaught += 1;
         if(this.amountDiamondsCaught >= AMOUNT_DIAMONDS){
             this.endGame = true;
             game.time.events.remove(this.timerGameOver);
+            this.win.play();
             this.showFinalMessage('CONGRATULATIONS!');
         }
     },
@@ -140,7 +155,7 @@ GamePlayManager = {
      */
     showFinalMessage:function(msg) {
         this.tweenMollusk.stop();
-
+        this.musicLoop.stop();
         var bgAlpha = game.add.bitmapData(game.width, game.height);
         bgAlpha.ctx.fillStyle = '#000000';
         bgAlpha.ctx.fillRect(0,0, game.width, game.height);
@@ -163,6 +178,7 @@ GamePlayManager = {
     onTap:function(){
         if(!this.flagFirstMouseDown){
             this.tweenMollusk = game.add.tween(this.mollusk.position).to({y: -0.001}, 5800, Phaser.Easing.Cubic.InOut, true, 0, 1000, true).loop(true);
+            this.musicLoop.play();
         }
         this.flagFirstMouseDown = true;
     },
